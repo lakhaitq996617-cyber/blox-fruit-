@@ -1,0 +1,87 @@
+-- 🧠 TÊN SCRIPT
+getgenv().ScriptName = "beta hub"
+
+-- 📦 GUI
+local ScreenGui = Instance.new("ScreenGui")
+local Main = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local Toggle = Instance.new("TextButton")
+
+ScreenGui.Parent = game.CoreGui
+
+-- 🎨 MAIN
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 300, 0, 180)
+Main.Position = UDim2.new(0.5, -150, 0.5, -90)
+Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Main.Active = true
+Main.Draggable = true
+
+-- 🏷️ TITLE
+Title.Parent = Main
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "BLOX FRUIT HUB"
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.BackgroundColor3 = Color3.fromRGB(15,15,15)
+
+-- 🔘 TOGGLE
+Toggle.Parent = Main
+Toggle.Size = UDim2.new(0, 200, 0, 50)
+Toggle.Position = UDim2.new(0.5, -100, 0.5, -25)
+Toggle.Text = "AUTO FARM: OFF"
+
+-- ⚙️ BIẾN
+local farming = false
+local player = game.Players.LocalPlayer
+
+-- 🔍 HÀM TÌM ENEMY GẦN NHẤT
+function getNearestEnemy()
+    local nearest = nil
+    local distance = math.huge
+
+    for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+        if enemy:FindFirstChild("HumanoidRootPart") and enemy:FindFirstChild("Humanoid") then
+            if enemy.Humanoid.Health > 0 then
+                local dist = (player.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude
+                if dist < distance then
+                    distance = dist
+                    nearest = enemy
+                end
+            end
+        end
+    end
+
+    return nearest
+end
+
+-- 🥊 AUTO FARM
+function autoFarm()
+    while farming do
+        task.wait(0.5)
+
+        local char = player.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
+
+        local enemy = getNearestEnemy()
+        if enemy then
+            -- 📍 TELEPORT TỚI ENEMY
+            char.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+
+            -- 🥊 ĐÁNH
+            game:GetService("VirtualUser"):ClickButton1(Vector2.new())
+
+        else
+            print("Không tìm thấy enemy")
+        end
+    end
+end
+
+-- 🔘 BẬT/TẮT
+Toggle.MouseButton1Click:Connect(function()
+    farming = not farming
+    Toggle.Text = farming and "AUTO FARM: ON" or "AUTO FARM: OFF"
+
+    if farming then
+        autoFarm()
+    end
+end)
